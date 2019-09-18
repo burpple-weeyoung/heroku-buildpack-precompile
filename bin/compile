@@ -7,6 +7,6 @@ env_dir=$3
 for folder in assets packs
 do
   [ -d $cache_dir/$folder ] &&
-    echo copying $cache_dir/$folder to $build_dir/public &&
+    echo copying $cache_dir/$folder to $build_dir/public/ &&
     cp -r $cache_dir/$folder $build_dir/public/
 done
