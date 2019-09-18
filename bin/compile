@@ -1,39 +1,12 @@
 #!/bin/bash
 
-indent() {
-  sed 's/^/       /'
-}
+build_dir=$1
+cache_dir=$2
+env_dir=$3
 
-BUILD_DIR=$1
-CACHE_DIR=$2
-ENV_DIR=$3
-
-  echo "-----> installing yarn"
-  apt-get update && apt-get install sudo
-  curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo apt-key add -
-  echo "deb https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list
-  sudo apt-get update && sudo apt-get install yarn
-
-  echo "-----> exporting env"
-  blacklist_regex=${3:-'^(PATH|GIT_DIR|CPATH|CPPATH|LD_PRELOAD|LIBRARY_PATH)$'}
-  for e in $(ls $ENV_DIR); do
-    echo "$e" | grep -qvE "$blacklist_regex" &&
-    export "$e=$(cat $ENV_DIR/$e)"
-    :
-  done
-
-  echo "-----> Restoring Assets from Cache (if any)"
-  cp -r $CACHE_DIR/assets $BUILD_DIR/public/
-
-
-  echo "-----> Precompiling assets..."
-
-  cd $BUILD_DIR
-  SKIP_CORPUS=1 bundle exec rake assets:precompile | indent
-
-  echo "-----> Assets precompiled!"
-  echo "-----> Saving Assets to Cache"
-  cp -r $BUILD_DIR/public/assets $CACHE_DIR
-
-echo "-----> Deleting app/assets to reduce slug size"
-rm -rf app/assets/
+for folder in assets packs
+do
+  [ -d $cache_dir/$folder ] &&
+    echo copying $cache_dir/$folder to $build_dir/public &&
+    cp -r $cache_dir/$folder $build_dir/public/
+done
